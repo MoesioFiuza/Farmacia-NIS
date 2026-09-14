@@ -84,9 +84,11 @@ export function NewPatient({
   onBack: () => void
 }) {
   const [saved, setSaved] = useState(false)
+  const [validationError, setValidationError] = useState('')
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
+    setValidationError('')
     const data = new FormData(event.currentTarget)
     const patient: Patient = {
       id: crypto.randomUUID(),
@@ -139,7 +141,11 @@ export function NewPatient({
         <h1>Cadastrar paciente</h1>
         <p className="muted">Preencha apenas os dados necessários para o acompanhamento.</p>
       </section>
-      <form className="panel form-panel" onSubmit={handleSubmit}>
+      <form
+        className={validationError ? 'panel form-panel form-panel--invalid' : 'panel form-panel'}
+        onSubmit={handleSubmit}
+        onInvalid={() => setValidationError('Existem campos obrigatórios sem preencher. Verifique os itens destacados antes de salvar.')}
+      >
         <div className="form-section">
           <h2>Dados pessoais</h2>
           <div className="form-grid">
@@ -251,6 +257,8 @@ export function NewPatient({
         </div>
 
         <div className="form-actions">
+          {validationError && <p className="form-validation-alert" role="alert">{validationError}</p>}
+          {saved && <p className="form-save-success" role="status">Paciente salvo com sucesso!</p>}
           <button type="button" className="button button--secondary" onClick={onBack}>Cancelar</button>
           <button type="submit" className="button button--primary">{saved ? 'Paciente salvo!' : 'Salvar paciente'}</button>
         </div>

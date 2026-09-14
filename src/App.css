@@ -94,6 +94,14 @@
 .field textarea { resize: vertical; }
 .field input:focus, .field select:focus, .field textarea:focus { border-color: #d94b5a; box-shadow: 0 0 0 3px #e51f3213; }
 .form-actions { min-height: 74px; padding: 0 24px; display: flex; align-items: center; justify-content: flex-end; gap: 11px; background: #fafbfc; }
+.form-validation-alert, .form-save-success { margin: 0 auto 0 0; font-size: .78rem; font-weight: 700; }
+.form-validation-alert { position: fixed; top: 22px; right: 22px; z-index: 100; max-width: 420px; margin: 0; padding: 13px 16px; border: 1px solid #e5a3aa; border-radius: 9px; color: #941b28; background: #fff4f5; box-shadow: 0 8px 24px #56101b26; }
+.form-save-success { color: #187153; }
+.form-panel--invalid input:invalid, .form-panel--invalid select:invalid, .form-panel--invalid textarea:invalid {
+  border-color: #d94453;
+  box-shadow: 0 0 0 3px #d9445314;
+}
+.form-panel--invalid .intake-question:has(input:invalid) { border-color: #d94453; background: #fff7f8; }
 .check-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 9px; }
 .check-grid--compact { grid-template-columns: repeat(3, 1fr); }
 .check-card { min-height: 43px; padding: 0 11px; display: flex; align-items: center; gap: 8px; border: 1px solid #dfe3e8; border-radius: 7px; color: #536074; font-size: .78rem; cursor: pointer; }
@@ -306,6 +314,9 @@
   .evolution-panel { position: static; }
   .appointment-card { align-items: flex-start; flex-wrap: wrap; }
   .appointment-card .module-card__content { min-width: calc(100% - 64px); }
+  .form-actions { flex-wrap: wrap; padding: 14px 18px; }
+  .form-validation-alert { top: 12px; right: 12px; left: 12px; max-width: none; }
+  .form-save-success { width: 100%; }
 }
 
 @media (max-width: 780px) {
