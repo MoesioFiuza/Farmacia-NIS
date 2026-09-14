@@ -3,6 +3,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { localRepository } from '../data/localRepository'
 import type { MealMoment, Medication, Patient } from '../domain/patient'
 import { momentInfo } from '../ui/medicationMoments'
+import { createId } from '../utils/createId'
 
 export function MedicationPlan({
   patients,
@@ -22,7 +23,7 @@ export function MedicationPlan({
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     localRepository.saveMedication({
-      id: crypto.randomUUID(),
+      id: createId(),
       patientId: String(data.get('patientId')),
       name: String(data.get('name')),
       dosage: String(data.get('dosage')),

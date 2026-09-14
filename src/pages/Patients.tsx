@@ -2,6 +2,7 @@ import { ArrowLeft, Search, UserRound } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { localRepository } from '../data/localRepository'
 import type { BinaryAnswer, Patient } from '../domain/patient'
+import { createId } from '../utils/createId'
 
 const healthConditions = [
   'Diabetes',
@@ -91,7 +92,7 @@ export function NewPatient({
     setValidationError('')
     const data = new FormData(event.currentTarget)
     const patient: Patient = {
-      id: crypto.randomUUID(),
+      id: createId(),
       recordNumber: String(data.get('recordNumber')),
       name: String(data.get('name')),
       birthDate: String(data.get('birthDate')),

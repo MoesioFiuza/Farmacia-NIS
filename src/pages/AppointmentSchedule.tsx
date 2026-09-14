@@ -2,6 +2,7 @@ import { CalendarDays, CheckCircle2, Clock3, Plus } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { localRepository } from '../data/localRepository'
 import type { Appointment, Patient } from '../domain/patient'
+import { createId } from '../utils/createId'
 
 interface AppointmentScheduleProps {
   patients: Patient[]
@@ -30,7 +31,7 @@ export function AppointmentSchedule({
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     localRepository.saveAppointment({
-      id: crypto.randomUUID(),
+      id: createId(),
       patientId,
       scheduledAt: String(data.get('scheduledAt')),
       reason: String(data.get('reason')),

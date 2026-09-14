@@ -2,6 +2,7 @@ import { ClipboardCheck, TrendingUp } from 'lucide-react'
 import { useMemo, useState, type FormEvent } from 'react'
 import { localRepository } from '../data/localRepository'
 import type { AdherenceAssessment, AdherenceAnswers, Patient } from '../domain/patient'
+import { createId } from '../utils/createId'
 
 interface AdherenceAssessmentPageProps {
   patients: Patient[]
@@ -50,7 +51,7 @@ export function AdherenceAssessmentPage({
     ].filter(Boolean).length
 
     localRepository.saveAdherence({
-      id: crypto.randomUUID(),
+      id: createId(),
       patientId,
       assessedAt: new Date().toISOString(),
       answers,

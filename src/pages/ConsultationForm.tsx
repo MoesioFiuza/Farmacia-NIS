@@ -2,6 +2,7 @@ import { ClipboardCheck } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { localRepository } from '../data/localRepository'
 import type { Consultation, Patient } from '../domain/patient'
+import { createId } from '../utils/createId'
 
 const conditions = [
   'Diabetes',
@@ -21,7 +22,7 @@ export function ConsultationForm({ patients }: { patients: Patient[] }) {
     event.preventDefault()
     const data = new FormData(event.currentTarget)
     const consultation: Consultation = {
-      id: crypto.randomUUID(),
+      id: createId(),
       patientId: String(data.get('patientId')),
       date: String(data.get('date')),
       bloodPressure: String(data.get('bloodPressure')),

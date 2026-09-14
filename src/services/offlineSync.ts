@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient'
+import { createId } from '../utils/createId'
 
 export type SyncEntity =
   | 'patient'
@@ -173,7 +174,7 @@ export const offlineSync = {
       (operation) => operation.entity === entity && operation.entityId === entityId,
     )
     const operation: SyncOperation = {
-      id: existing?.id ?? crypto.randomUUID(),
+      id: existing?.id ?? createId(),
       entity,
       action: existing?.action ?? (version > 0 ? 'update' : 'create'),
       entityId,
