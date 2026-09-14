@@ -1,0 +1,72 @@
+services:
+  database:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: nis
+      POSTGRES_USER: nis
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Defina POSTGRES_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U nis -d nis"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks: [private]
+
+  migrate:
+    build: ./server
+    environment: &api-environment
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgres://nis:${POSTGRES_PASSWORD}@database:5432/nis
+      JWT_SECRET: ${JWT_SECRET:?Defina JWT_SECRET}
+      ACCESS_TOKEN_TTL: 15m
+      REFRESH_TOKEN_DAYS: 30
+      CORS_ORIGINS: ${PUBLIC_ORIGIN:-http://localhost:8080}
+      TRUST_PROXY: "true"
+      LOG_LEVEL: info
+    command: ["node", "dist/src/migrate.js"]
+    depends_on:
+      database:
+        condition: service_healthy
+    networks: [private]
+    restart: "no"
+
+  api:
+    build: ./server
+    restart: unless-stopped
+    environment: *api-environment
+    depends_on:
+      database:
+        condition: service_healthy
+      migrate:
+        condition: service_completed_successfully
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/ready').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 15s
+      timeout: 4s
+      retries: 10
+    networks: [private]
+
+  web:
+    build:
+      context: .
+      args:
+        VITE_API_URL: /api/v1
+        VITE_REQUIRE_AUTH: "true"
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-8080}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    networks: [private]
+
+volumes:
+  postgres_data:
+
+networks:
+  private:
