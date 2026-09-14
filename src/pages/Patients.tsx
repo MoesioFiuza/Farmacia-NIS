@@ -1,4 +1,4 @@
-import { ArrowLeft, Search, UserRound } from 'lucide-react'
+import { ArrowLeft, Eye, Search, UserRound, X } from 'lucide-react'
 import { useState, type FormEvent } from 'react'
 import { localRepository } from '../data/localRepository'
 import type { BinaryAnswer, Patient } from '../domain/patient'
@@ -27,13 +27,129 @@ function YesNoQuestion({ name, children }: { name: string; children: string }) {
   )
 }
 
+function showValue(value: string | string[] | undefined) {
+  if (Array.isArray(value)) return value.length ? value.join(', ') : 'Não informado'
+  if (value === 'sim') return 'Sim'
+  if (value === 'nao') return 'Não'
+  return value || 'Não informado'
+}
+
+function formatRegistrationDate(value: string | undefined) {
+  if (!value) return 'Data não informada'
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? 'Data não informada' : date.toLocaleDateString('pt-BR')
+}
+
+function registrationMonth(value: string | undefined) {
+  if (!value) return { key: 'sem-data', label: 'Data não informada' }
+  const date = new Date(value)
+  if (Number.isNaN(date.getTime())) return { key: 'sem-data', label: 'Data não informada' }
+  const label = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric' }).format(date)
+  return { key: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`, label }
+}
+
+function RecordItem({ label, value }: { label: string; value: string | string[] | undefined }) {
+  return <div className="record-item"><span>{label}</span><strong>{showValue(value)}</strong></div>
+}
+
+function PatientRecord({ patient, onClose }: { patient: Patient; onClose: () => void }) {
+  const intake = patient.intake
+  return (
+    <div className="record-modal" role="dialog" aria-modal="true" aria-labelledby="patient-record-title">
+      <button className="record-modal__backdrop" onClick={onClose} aria-label="Fechar ficha" />
+      <section className="record-modal__content">
+        <header className="record-modal__header">
+          <div>
+            <p className="eyebrow">FICHA DO PACIENTE</p>
+            <h2 id="patient-record-title">{patient.name}</h2>
+            <span>Prontuário {patient.recordNumber}</span>
+          </div>
+          <button className="icon-button" onClick={onClose} aria-label="Fechar ficha"><X /></button>
+        </header>
+
+        <div className="record-modal__body">
+          <section className="record-section">
+            <h3>Dados pessoais</h3>
+            <div className="record-grid">
+              <RecordItem label="Data de nascimento" value={patient.birthDate} />
+              <RecordItem label="Sexo" value={patient.sex} />
+              <RecordItem label="Telefone" value={patient.phone} />
+              <RecordItem label="Data do cadastro" value={new Date(patient.createdAt).toLocaleDateString('pt-BR')} />
+            </div>
+          </section>
+
+          <section className="record-section">
+            <h3>Dados de saúde</h3>
+            <div className="record-grid">
+              <RecordItem label="Altura" value={intake?.height} />
+              <RecordItem label="Peso" value={intake?.weight} />
+              <RecordItem label="Pressão arterial" value={intake?.bloodPressure} />
+              <RecordItem label="Glicemia" value={intake?.glucose} />
+              <RecordItem label="Tipo sanguíneo" value={intake?.bloodType} />
+              <RecordItem label="Condições de saúde" value={intake?.conditions} />
+            </div>
+          </section>
+
+          <section className="record-section">
+            <h3>Histórico e tratamento</h3>
+            <div className="record-grid">
+              <RecordItem label="Doença ou situação recente" value={intake?.recentDisease} />
+              <RecordItem label="Qual situação recente" value={intake?.recentDiseaseDetails} />
+              <RecordItem label="Em tratamento médico" value={intake?.medicalTreatment} />
+              <RecordItem label="Medicamentos em uso" value={intake?.currentMedications} />
+              <RecordItem label="Toma no horário correto" value={intake?.takesOnTime} />
+              <RecordItem label="Esquece medicamentos" value={intake?.forgetsMedication} />
+              <RecordItem label="Conduta após esquecimento" value={intake?.reminderStrategy} />
+              <RecordItem label="Alergia a medicamentos" value={intake?.medicationAllergy} />
+              <RecordItem label="Quais alergias" value={intake?.allergyDetails} />
+              <RecordItem label="Usa substâncias não prescritas" value={intake?.nonPrescribedSubstances} />
+              <RecordItem label="Quais substâncias" value={intake?.nonPrescribedDetails} />
+            </div>
+          </section>
+
+          <section className="record-section">
+            <h3>Hábitos e rotina</h3>
+            <div className="record-grid">
+              <RecordItem label="Hábitos" value={intake?.habits} />
+              <RecordItem label="Pratica atividade física" value={intake?.physicalActivity} />
+              <RecordItem label="Atividade praticada" value={intake?.physicalActivityDetails} />
+              <RecordItem label="Alimentação e hidratação" value={intake?.foodAndHydration} />
+              <RecordItem label="Toma chá" value={intake?.usesTea} />
+              <RecordItem label="Quais chás" value={intake?.teaDetails} />
+              <RecordItem label="Usa suplementos" value={intake?.usesSupplements} />
+              <RecordItem label="Quais suplementos" value={intake?.supplementDetails} />
+              <RecordItem label="Última consulta médica" value={intake?.lastDoctorVisit} />
+            </div>
+          </section>
+
+          <section className="record-section">
+            <h3>Orientações farmacêuticas</h3>
+            <RecordItem label="Orientações fornecidas" value={intake?.pharmaceuticalGuidance} />
+          </section>
+        </div>
+      </section>
+    </div>
+  )
+}
+
 export function PatientList({ patients }: { patients: Patient[] }) {
   const [query, setQuery] = useState('')
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const normalizedQuery = query.toLocaleLowerCase('pt-BR')
   const visiblePatients = patients.filter(
     (patient) =>
       patient.name.toLocaleLowerCase('pt-BR').includes(normalizedQuery) ||
       patient.recordNumber.includes(query),
+  )
+  const patientGroups = Object.entries(
+    [...visiblePatients]
+      .sort((left, right) => (right.createdAt || '').localeCompare(left.createdAt || ''))
+      .reduce<Record<string, { label: string; patients: Patient[] }>>((groups, patient) => {
+        const month = registrationMonth(patient.createdAt)
+        groups[month.key] ??= { label: month.label, patients: [] }
+        groups[month.key].patients.push(patient)
+        return groups
+      }, {}),
   )
 
   return (
@@ -59,20 +175,34 @@ export function PatientList({ patients }: { patients: Patient[] }) {
             <strong>Nenhum paciente encontrado</strong>
           </div>
         ) : (
-          <div className="patient-list patient-list--spaced">
-            {visiblePatients.map((patient) => (
-              <article className="patient-row" key={patient.id}>
-                <span className="patient-avatar">{patient.name.slice(0, 2).toUpperCase()}</span>
-                <div>
-                  <strong>{patient.name}</strong>
-                  <small>Prontuário {patient.recordNumber} · Nascimento: {patient.birthDate || 'não informado'}</small>
+          <div className="patient-groups">
+            {patientGroups.map(([key, group]) => (
+              <section className="patient-month-group" key={key}>
+                <header className="patient-month-heading">
+                  <strong>{group.label}</strong>
+                  <span>{group.patients.length} {group.patients.length === 1 ? 'cadastro' : 'cadastros'}</span>
+                </header>
+                <div className="patient-list patient-list--spaced">
+                  {group.patients.map((patient) => (
+                    <article className="patient-row" key={patient.id}>
+                      <span className="patient-avatar">{patient.name.slice(0, 2).toUpperCase()}</span>
+                      <div>
+                        <strong>{patient.name}</strong>
+                        <small>Prontuário {patient.recordNumber} · Nascimento: {patient.birthDate || 'não informado'} · Cadastro: {formatRegistrationDate(patient.createdAt)}</small>
+                      </div>
+                      <span className="tag">Ativo</span>
+                      <button className="button button--record" onClick={() => setSelectedPatient(patient)}>
+                        <Eye size={17} /> Ver ficha
+                      </button>
+                    </article>
+                  ))}
                 </div>
-                <span className="tag">Ativo</span>
-              </article>
+              </section>
             ))}
           </div>
         )}
       </section>
+      {selectedPatient && <PatientRecord patient={selectedPatient} onClose={() => setSelectedPatient(null)} />}
     </>
   )
 }
