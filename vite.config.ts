@@ -17,8 +17,8 @@ export default defineConfig({
         name: 'Farmácia Clínica — Estácio FMJ',
         short_name: 'Farmácia Clínica',
         description: 'Acompanhamento farmacêutico de pacientes',
-        theme_color: '#18283b',
-        background_color: '#f6f7f9',
+        theme_color: '#063b7a',
+        background_color: '#f5f8fb',
         display: 'standalone',
         lang: 'pt-BR',
         icons: [

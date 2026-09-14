@@ -23,31 +23,42 @@ export function Dashboard({ database, onNavigate }: DashboardProps) {
 
   return (
     <>
-      <section className="page-heading heading-row">
-        <div>
-          <p className="eyebrow">BOM DIA</p>
-          <h1>Acompanhamento farmacêutico</h1>
-          <p className="muted sentence-case">{today}</p>
+      <section className="dashboard-hero">
+        <div className="dashboard-hero__content">
+          <p className="dashboard-hero__eyebrow">VISÃO GERAL</p>
+          <h1>Acompanhamento<br />farmacêutico</h1>
+          <p>Resumo dos pacientes, consultas e medicamentos cadastrados.</p>
+          <div className="dashboard-hero__footer">
+            <span className="dashboard-date"><CalendarDays size={17} /><span className="sentence-case">{today}</span></span>
+            <button
+              className="button dashboard-hero__button"
+              onClick={() => onNavigate('consulta')}
+            >
+              Iniciar consulta <ArrowRight size={18} />
+            </button>
+          </div>
         </div>
-        <button
-          className="button button--primary desktop-only"
-          onClick={() => onNavigate('consulta')}
-        >
-          <CalendarDays size={19} />
-          Iniciar consulta
-        </button>
+        <div className="dashboard-hero__visual" aria-hidden="true">
+          <span className="hero-orbit hero-orbit--one" />
+          <span className="hero-orbit hero-orbit--two" />
+          <span className="hero-cross"><span /><span /></span>
+          <div className="hero-care-badge">
+            <strong>{database.patients.length}</strong>
+            <span>pacientes cadastrados</span>
+          </div>
+        </div>
       </section>
 
       <section className="stats-grid" aria-label="Resumo">
-        <article className="stat-card">
+        <article className="stat-card stat-card--patients">
           <span className="stat-icon stat-icon--red"><Users /></span>
           <div><strong>{database.patients.length}</strong><span>Pacientes cadastrados</span></div>
         </article>
-        <article className="stat-card">
+        <article className="stat-card stat-card--consultations">
           <span className="stat-icon stat-icon--blue"><CalendarDays /></span>
           <div><strong>{database.consultations.length}</strong><span>Consultas realizadas</span></div>
         </article>
-        <article className="stat-card">
+        <article className="stat-card stat-card--medications">
           <span className="stat-icon stat-icon--green"><Pill /></span>
           <div><strong>{database.medications.length}</strong><span>Medicamentos ativos</span></div>
         </article>
