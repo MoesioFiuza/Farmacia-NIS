@@ -13,7 +13,7 @@ RUN apk add --no-cache tini
 COPY package*.json ./
 RUN npm ci --omit=dev && npm cache clean --force
 COPY --from=build /app/dist ./dist
-COPY migrations ./migrations
+COPY migrations ./dist/migrations
 USER node
 EXPOSE 3001
 ENTRYPOINT ["/sbin/tini", "--"]
